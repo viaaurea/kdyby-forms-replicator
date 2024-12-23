@@ -1,4 +1,9 @@
-# Kdyby/FormsReplicator
+# Fork of Kdyby/FormsReplicator for PHP 8.4 maintained by Via Aurea
+
+>
+> 💿 `composer viaaurea/kdyby-forms-replicator`
+>
+
 
 -----
 
@@ -13,26 +18,36 @@
 
 [![Join the chat](https://img.shields.io/gitter/room/Kdyby/Help.svg?style=flat-square)](https://gitter.im/Kdyby/Help)
 
+
 ## Install
 
 ```sh
-composer require kdyby/forms-replicator
+composer require viaaurea/kdyby-forms-replicator
 ```
 
-## Versions
+## Versions of viaaurea/kdyby-forms-replicator
 
-| State       | Version      | Branch      | PHP      | Nette    |
-|-------------|--------------|-------------|----------|----------|
-| stable      | `^2.0.0`     | `master`    | `>= 7.1` | `^3.0.0` |
-| stable      | `^1.4.0`     | `nette-2.4` | `>= 5.6` | `^2.4.0` |
-| stable      | `^1.3.0`     | `nette-2.3` | `>= 5.6` | `^2.3.0` |
-| stable      | `^1.2.0`     | `nette-2.2` | `>= 5.6` | `^2.2.0` |
+| State       | Version | Branch      | PHP                         | Nette |
+|-------------|---------|-------------|-----------------------------|------|
+| stable      | `^1` | `trunk`     | `>= 7.1`, including PHP `8.4` | `^3` |
+
+
+## Versions of kdyby/forms-replicator
+
+> Conflicts with PHP 8.4 because of its dependency `nette/utils` that is locked at `v3`.
+
+| State       | Version      | Branch      | PHP               | Nette    |
+|-------------|--------------|-------------|-------------------|----------|
+| stable      | `^2.0.0`     | `master`    | `>= 7.1 && < 8.4` | `^3.0.0` |
+| stable      | `^1.4.0`     | `nette-2.4` | `>= 5.6`          | `^2.4.0` |
+| stable      | `^1.3.0`     | `nette-2.3` | `>= 5.6`          | `^2.3.0` |
+| stable      | `^1.2.0`     | `nette-2.2` | `>= 5.6`          | `^2.2.0` |
 
 ## Overview
 
-- [Learn more in the documentation](https://github.com/Kdyby/FormsReplicator/blob/master/docs/en/index.md)
+- [Learn more in the documentation](/docs/en/index.md)
 
-## Maintainers
+## Original maintainers
 
 <table>
   <tbody>
