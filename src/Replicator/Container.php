@@ -190,7 +190,7 @@ class Container extends Nette\Forms\Container
 	 *
 	 * @return Nette\Forms\Container|Container
 	 */
-	public function setValues($values, bool $erase = FALSE, bool $onlyDisabled = FALSE): static
+	public function setValues(array|object $values, bool $erase = FALSE, bool $onlyDisabled = FALSE): static
 	{
 		if (!$this->form->isAnchored() || !$this->form->isSubmitted()) {
 			foreach ($values as $name => $value) {
