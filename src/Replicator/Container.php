@@ -190,7 +190,7 @@ class Container extends Nette\Forms\Container
 	 *
 	 * @return Nette\Forms\Container|Container
 	 */
-	public function setValues($values, bool $erase = FALSE, bool $onlyDisabled = FALSE)
+	public function setValues($values, bool $erase = FALSE, bool $onlyDisabled = FALSE): static
 	{
 		if (!$this->form->isAnchored() || !$this->form->isSubmitted()) {
 			foreach ($values as $name => $value) {
@@ -374,7 +374,7 @@ class Container extends Nette\Forms\Container
 	}
 
 
-	public function addComponent(Nette\ComponentModel\IComponent $component, ?string $name, ?string $insertBefore = NULL): Nette\ComponentModel\IContainer
+	public function addComponent(Nette\ComponentModel\IComponent $component, ?string $name, ?string $insertBefore = NULL): static
 	{
 		$group = $this->currentGroup;
 		$this->currentGroup = NULL;
