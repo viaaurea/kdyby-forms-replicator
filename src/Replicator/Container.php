@@ -55,8 +55,18 @@ class Container extends Nette\Forms\Container
 	 */
 	public function __construct(callable $factory, int $createDefault = 0, bool $forceDefault = FALSE)
 	{
-		$this->monitor(Nette\Application\UI\Presenter::class);
-		$this->monitor(Nette\Forms\Form::class);
+		$this->monitor(Nette\Application\UI\Presenter::class, function (): void {
+			$this->loadHttpData();
+			$this->createDefault();
+		});
+		$this->monitor(Nette\Forms\Form::class, function (): void {
+			// u UI formuláře se počká na připnutí presenteru — obslouží to callback výše
+			if ($this->form instanceof Nette\Application\UI\Form) {
+				return;
+			}
+			$this->loadHttpData();
+			$this->createDefault();
+		});
 
 		try {
 			$this->factoryCallback = Closure::fromCallable($factory);
@@ -75,26 +85,6 @@ class Container extends Nette\Forms\Container
 	public function setFactory(callable $factory): void
 	{
 		$this->factoryCallback = Closure::fromCallable($factory);
-	}
-
-
-	/**
-	 * Magical component factory
-	 */
-	protected function attached(Nette\ComponentModel\IComponent $obj): void
-	{
-		parent::attached($obj);
-
-		if (
-			!$obj instanceof Nette\Application\UI\Presenter
-			&&
-			$this->form instanceof Nette\Application\UI\Form
-		) {
-			return;
-		}
-
-		$this->loadHttpData();
-		$this->createDefault();
 	}
 
 
@@ -249,7 +239,7 @@ class Container extends Nette\Forms\Container
 	private function getHttpData()
 	{
 		if ($this->httpPost === NULL) {
-			$path = explode(self::NAME_SEPARATOR, $this->lookupPath(Nette\Forms\Form::class));
+			$path = explode(self::NameSeparator, $this->lookupPath(Nette\Forms\Form::class));
 			$this->httpPost = Nette\Utils\Arrays::get($this->getForm()->getHttpData(), $path, NULL);
 		}
 
@@ -282,7 +272,6 @@ class Container extends Nette\Forms\Container
 		// reflection is required to hack form groups
 		$groupRefl = new ReflectionClass(Nette\Forms\ControlGroup::class);
 		$controlsProperty = $groupRefl->getProperty('controls');
-		$controlsProperty->setAccessible(TRUE);
 
 		// walk groups and clean then from removed components
 		$affected = [];
@@ -291,8 +280,8 @@ class Container extends Nette\Forms\Container
 			$groupControls = $controlsProperty->getValue($group);
 
 			foreach ($components as $control) {
-				if ($groupControls->contains($control)) {
-					$groupControls->detach($control);
+				if ($groupControls->offsetExists($control)) {
+					$groupControls->offsetUnset($control);
 
 					if (!in_array($group, $affected, TRUE)) {
 						$affected[] = $group;
