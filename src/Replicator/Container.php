@@ -13,8 +13,6 @@ namespace Kdyby\Replicator;
 use Closure;
 use Iterator;
 use Nette;
-use ReflectionClass;
-use SplObjectStorage;
 use Traversable;
 
 
@@ -60,7 +58,7 @@ class Container extends Nette\Forms\Container
 			$this->createDefault();
 		});
 		$this->monitor(Nette\Forms\Form::class, function (): void {
-			// u UI formuláře se počká na připnutí presenteru — obslouží to callback výše
+			// a UI form waits for the presenter to be attached - handled by the callback above
 			if ($this->form instanceof Nette\Application\UI\Form) {
 				return;
 			}
@@ -119,7 +117,7 @@ class Container extends Nette\Forms\Container
 
 		($this->factoryCallback)($container);
 
-		return $this->created[$container->name] = $container;
+		return $this->created[$container->getName()] = $container;
 	}
 
 
@@ -128,7 +126,7 @@ class Container extends Nette\Forms\Container
 		$controls = iterator_to_array($this->getComponents(FALSE, Nette\Forms\IControl::class));
 		$firstControl = reset($controls);
 
-		return $firstControl ? $firstControl->name : NULL;
+		return $firstControl ? $firstControl->getName() : NULL;
 	}
 
 
@@ -252,8 +250,8 @@ class Container extends Nette\Forms\Container
 	 */
 	public function remove(Nette\ComponentModel\Container $container, bool $cleanUpGroups = FALSE): void
 	{
-		if ($container->parent !== $this) {
-			throw new Nette\InvalidArgumentException('Given component ' . $container->name . ' is not children of ' . $this->name . '.');
+		if ($container->getParent() !== $this) {
+			throw new Nette\InvalidArgumentException('Given component ' . $container->getName() . ' is not children of ' . $this->getName() . '.');
 		}
 
 		// to check if form was submitted by this one
@@ -269,23 +267,21 @@ class Container extends Nette\Forms\Container
 		$components = $container->getComponents(TRUE);
 		$this->removeComponent($container);
 
-		// reflection is required to hack form groups
-		$groupRefl = new ReflectionClass(Nette\Forms\ControlGroup::class);
-		$controlsProperty = $groupRefl->getProperty('controls');
-
 		// walk groups and clean then from removed components
 		$affected = [];
 		foreach ($this->getForm()->getGroups() as $group) {
-			/** @var SplObjectStorage $groupControls */
-			$groupControls = $controlsProperty->getValue($group);
+			$groupControls = $group->getControls();
 
 			foreach ($components as $control) {
-				if ($groupControls->offsetExists($control)) {
-					$groupControls->offsetUnset($control);
+				// getComponents(TRUE) yields containers as well, those are never in a group
+				if (!$control instanceof Nette\Forms\IControl || !in_array($control, $groupControls, TRUE)) {
+					continue;
+				}
 
-					if (!in_array($group, $affected, TRUE)) {
-						$affected[] = $group;
-					}
+				$group->remove($control);
+
+				if (!in_array($group, $affected, TRUE)) {
+					$affected[] = $group;
 				}
 			}
 		}
@@ -293,7 +289,7 @@ class Container extends Nette\Forms\Container
 		// remove affected & empty groups
 		if ($cleanUpGroups && $affected) {
 			foreach ($this->getForm()->getComponents(FALSE, Nette\Forms\Container::class) as $cont) {
-				if ($index = array_search($cont->currentGroup, $affected, TRUE)) {
+				if (($index = array_search($cont->currentGroup, $affected, TRUE)) !== FALSE) {
 					unset($affected[$index]);
 				}
 			}
@@ -410,12 +406,12 @@ class Container extends Nette\Forms\Container
 					/** @var Container $replicator */
 					$replicator = $button->lookup(Container::class);
 					if (is_callable($callback)) {
-						$callback($replicator, $button->parent);
+						$callback($replicator, $button->getParent());
 					}
 					if ($form = $button->getForm(FALSE)) {
 						$form->onSuccess = [];
 					}
-					$replicator->remove($button->parent);
+					$replicator->remove($button->getParent());
 				};
 
 				return $_this;
